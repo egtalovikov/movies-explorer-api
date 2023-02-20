@@ -23,7 +23,7 @@ module.exports = urlRegex;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-mongoose.connect(`mongodb://${NODE_ENV === 'production' ? MONGO_URL : '127.0.0.1:27017/bitfilmsdb'}`, {
+mongoose.connect(NODE_ENV === 'production' ? MONGO_URL : 'mongodb://127.0.0.1:27017/bitfilmsdb', {
   useNewUrlParser: true,
 });
 
