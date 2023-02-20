@@ -1,25 +1,18 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const { errors } = require('celebrate');
+const limiter = require('./middlewares/limiter');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const handleErrors = require('./middlewares/errors');
-const { PORT = 3000 } = require('./config');
-
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+const { PORT = 3000, MONGO_URL, NODE_ENV } = require('./config');
 
 const app = express();
 
 const allowedCors = [
-  'https://mesto.egtalovikov.nomoredomainsclub.ru',
-  'http://mesto.egtalovikov.nomoredomainsclub.ru',
+  'https://diploma.egtalovikov.nomoredomains.work/',
+  'http://diploma.egtalovikov.nomoredomains.work/',
   'localhost:3000',
 ];
 
@@ -30,7 +23,7 @@ module.exports = urlRegex;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-mongoose.connect('mongodb://127.0.0.1:27017/bitfilmsdb', {
+mongoose.connect(`mongodb://${NODE_ENV === 'production' ? MONGO_URL : '127.0.0.1:27017/bitfilmsdb'}`, {
   useNewUrlParser: true,
 });
 
@@ -62,12 +55,6 @@ app.use((req, res, next) => {
 });
 
 app.use(requestLogger);
-
-app.get('/crash-test', () => {
-  setTimeout(() => {
-    throw new Error('Сервер сейчас упадёт');
-  }, 0);
-});
 
 app.use('/', require('./routes/index'));
 
