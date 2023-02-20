@@ -6,14 +6,14 @@ const { errors } = require('celebrate');
 const limiter = require('./middlewares/limiter');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const handleErrors = require('./middlewares/errors');
-const { PORT = 3001, MONGO_URL, NODE_ENV } = require('./config');
+const { PORT = 3000, MONGO_URL, NODE_ENV } = require('./config');
 
 const app = express();
 
 const allowedCors = [
   'https://diploma.egtalovikov.nomoredomains.work/',
   'http://diploma.egtalovikov.nomoredomains.work/',
-  'localhost:3001',
+  'localhost:3000',
 ];
 
 const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
