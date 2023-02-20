@@ -2,7 +2,7 @@ const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const urlRegex = require('../app');
 const {
-  getMovies, createMovie, deleteMovie
+  getMovies, createMovie, deleteMovie,
 } = require('../controllers/movies');
 
 router.get('/', getMovies);

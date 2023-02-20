@@ -12,13 +12,42 @@ const getMovies = (req, res, next) => {
 };
 
 const createMovie = (req, res, next) => {
-  const { country, director, duration, year, description, image, trailerLink, nameRU, nameEN, thumbnail, movieId } = req.body;
+  const {
+    country,
+    director,
+    duration,
+    year,
+    description,
+    image,
+    trailerLink,
+    nameRU,
+    nameEN,
+    thumbnail,
+    movieId,
+  } = req.body;
 
-  Movie.create({ country, director, duration, year, description, image, trailerLink, nameRU, nameEN, thumbnail, movieId, owner: req.user._id })
+  Movie.create({
+    country,
+    director,
+    duration,
+    year,
+    description,
+    image,
+    trailerLink,
+    nameRU,
+    nameEN,
+    thumbnail,
+    movieId,
+    owner: req.user._id,
+  })
     .then((movie) => res.status(201).send(movie))
     .catch((err) => {
       if (err instanceof ValidationError) {
-        next(new MyValidationError('Переданы некорректные данные при создании фильма'));
+        next(
+          new MyValidationError(
+            'Переданы некорректные данные при создании фильма',
+          ),
+        );
         return;
       }
       next(err);
@@ -30,7 +59,9 @@ const deleteMovie = (req, res, next) => {
     .orFail(new NotFoundError('Передан несуществующий _id фильма'))
     .then((movie) => {
       if (movie.owner.toString() !== req.user._id) {
-        throw new ForbiddenError('Вы не можете удалить фильм другого пользователя');
+        throw new ForbiddenError(
+          'Вы не можете удалить фильм другого пользователя',
+        );
       }
       return movie.delete();
     })
