@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const AuthError = require('../errors/auth-err');
-const { NODE_ENV, JWT_SECRET } = require('../config');
+const { NODE_ENV, JWT_SECRET } = require('../utils/config');
+const { NEED_AUTH_ERROR, AUTH_ERROR } = require('../utils/constants');
 
 const extractBearerToken = (header) => header.replace('Bearer ', '');
 
@@ -9,7 +10,7 @@ module.exports = (req, res, next) => {
     const { authorization } = req.headers;
 
     if (!authorization || !authorization.startsWith('Bearer ')) {
-      next(new AuthError('Необходима авторизация'));
+      next(new AuthError(NEED_AUTH_ERROR));
       return;
     }
 
@@ -18,7 +19,7 @@ module.exports = (req, res, next) => {
 
     req.user = payload;
   } catch (err) {
-    next(new AuthError('Что-то пошло не так при авторизации'));
+    next(new AuthError(AUTH_ERROR));
     return;
   }
 

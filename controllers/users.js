@@ -6,7 +6,10 @@ const NotFoundError = require('../errors/not-found-err');
 const MyValidationError = require('../errors/my-validation-err');
 const ConflictError = require('../errors/conflict-err');
 const AuthError = require('../errors/auth-err');
-const { NODE_ENV, JWT_SECRET } = require('../config');
+const { NODE_ENV, JWT_SECRET } = require('../utils/config');
+const {
+  CREATE_USER_ERROR, CONFLICT_USER_ERROR, USER_NOT_FOUND_ERROR, UPDATE_USER_ERROR, WRONG_AUTH_ERROR,
+} = require('../utils/constants');
 
 const createUser = (req, res, next) => {
   const {
@@ -22,16 +25,15 @@ const createUser = (req, res, next) => {
       password: hash,
     }))
     .then((user) => {
-      delete user.password;
       res.send(user);
     })
     .catch((err) => {
       if (err instanceof ValidationError) {
-        next(new MyValidationError('Переданы некорректные данные при создании пользователя'));
+        next(new MyValidationError(CREATE_USER_ERROR));
         return;
       }
       if (err.code === 11000) {
-        next(new ConflictError('Пользователь с такой почтой уже зарегистрирован'));
+        next(new ConflictError(CONFLICT_USER_ERROR));
         return;
       }
       next(err);
@@ -51,13 +53,17 @@ const updateProfile = (req, res, next) => {
   )
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFoundError(USER_NOT_FOUND_ERROR);
       }
       res.send(user);
     })
     .catch((err) => {
       if (err.name instanceof ValidationError) {
-        next(new MyValidationError('Переданы некорректные данные при обновлении профиля'));
+        next(new MyValidationError(UPDATE_USER_ERROR));
+        return;
+      }
+      if (err.code === 11000) {
+        next(new ConflictError(CONFLICT_USER_ERROR));
         return;
       }
       next(err);
@@ -69,12 +75,18 @@ const login = (req, res, next) => {
 
   return User.findOne({ email }).select('+password')
     .then((user) => {
-      const passwordCheck = bcrypt.compare(password, user.password);
-      if (!user || !passwordCheck) {
-        throw new AuthError('Неправильная почта или пароль');
+      if (!user) {
+        throw new AuthError(WRONG_AUTH_ERROR);
       }
-      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
-      res.send({ token, name: user.name, email: user.email });
+      bcrypt.compare(password, user.password)
+        .then((match) => {
+          if (!user || !match) {
+            throw new AuthError(WRONG_AUTH_ERROR);
+          }
+          const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
+          res.send({ token, name: user.name, email: user.email });
+        })
+        .catch(next);
     })
     .catch(next);
 };
@@ -83,7 +95,7 @@ const getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFoundError(USER_NOT_FOUND_ERROR);
       }
       res.send(user);
     })

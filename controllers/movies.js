@@ -4,49 +4,23 @@ const Movie = require('../models/movie');
 const NotFoundError = require('../errors/not-found-err');
 const MyValidationError = require('../errors/my-validation-err');
 const ForbiddenError = require('../errors/forbidden-err');
+const {
+  CREATE_MOVIE_ERROR, MOVIE_ID_NOT_EXIST_ERROR, NOT_YOUR_MOVIE_ERROR, MOVIE_ID_NOT_FOUND,
+} = require('../utils/constants');
 
 const getMovies = (req, res, next) => {
-  Movie.find({})
+  Movie.find({ owner: req.user._id })
     .then((movies) => res.send(movies))
     .catch(next);
 };
 
 const createMovie = (req, res, next) => {
-  const {
-    country,
-    director,
-    duration,
-    year,
-    description,
-    image,
-    trailerLink,
-    nameRU,
-    nameEN,
-    thumbnail,
-    movieId,
-  } = req.body;
-
-  Movie.create({
-    country,
-    director,
-    duration,
-    year,
-    description,
-    image,
-    trailerLink,
-    nameRU,
-    nameEN,
-    thumbnail,
-    movieId,
-    owner: req.user._id,
-  })
+  Movie.create({ ...req.body, owner: req.user._id })
     .then((movie) => res.status(201).send(movie))
     .catch((err) => {
       if (err instanceof ValidationError) {
         next(
-          new MyValidationError(
-            'Переданы некорректные данные при создании фильма',
-          ),
+          new MyValidationError(CREATE_MOVIE_ERROR),
         );
         return;
       }
@@ -56,19 +30,17 @@ const createMovie = (req, res, next) => {
 
 const deleteMovie = (req, res, next) => {
   Movie.findById(req.params.movieId)
-    .orFail(new NotFoundError('Передан несуществующий _id фильма'))
+    .orFail(new NotFoundError(MOVIE_ID_NOT_EXIST_ERROR))
     .then((movie) => {
       if (movie.owner.toString() !== req.user._id) {
-        throw new ForbiddenError(
-          'Вы не можете удалить фильм другого пользователя',
-        );
+        throw new ForbiddenError(NOT_YOUR_MOVIE_ERROR);
       }
       return movie.delete();
     })
     .then((movie) => res.send(movie))
     .catch((err) => {
       if (err instanceof CastError) {
-        next(new MyValidationError('Фильм с  указанным _id не найден'));
+        next(new MyValidationError(MOVIE_ID_NOT_FOUND));
         return;
       }
       next(err);

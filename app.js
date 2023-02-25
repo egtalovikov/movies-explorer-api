@@ -6,7 +6,7 @@ const { errors } = require('celebrate');
 const limiter = require('./middlewares/limiter');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const handleErrors = require('./middlewares/errors');
-const { PORT = 3000, MONGO_URL, NODE_ENV } = require('./config');
+const { PORT = 3000, MONGO_URL } = require('./utils/config');
 
 const app = express();
 
@@ -23,11 +23,13 @@ module.exports = urlRegex;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-mongoose.connect(`mongodb://${NODE_ENV === 'production' ? MONGO_URL : '127.0.0.1:27017/bitfilmsdb'}`, {
+mongoose.connect(`mongodb://${MONGO_URL}`, {
   useNewUrlParser: true,
 });
 
 app.use(helmet());
+
+app.use(requestLogger);
 
 app.use(limiter);
 
@@ -54,9 +56,7 @@ app.use((req, res, next) => {
   return null;
 });
 
-app.use(requestLogger);
-
-app.use('/', require('./routes/index'));
+app.use('/', require('./routes'));
 
 app.use(errorLogger);
 
