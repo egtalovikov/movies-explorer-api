@@ -13,7 +13,7 @@ const app = express();
 const allowedCors = [
   'https://diploma.egtalovikov.nomoredomains.work/',
   'http://diploma.egtalovikov.nomoredomains.work/',
-  'localhost:3000',
+  'http://localhost:3000',
 ];
 
 const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
