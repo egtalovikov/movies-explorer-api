@@ -11,8 +11,8 @@ const { PORT = 3000, MONGO_URL } = require('./utils/config');
 const app = express();
 
 const allowedCors = [
-  'https://diploma.egtalovikov.nomoredomains.work/',
-  'http://diploma.egtalovikov.nomoredomains.work/',
+  'https://diploma.egtalovikov.nomoredomains.work',
+  'http://diploma.egtalovikov.nomoredomains.work',
   'http://localhost:3000',
 ];
 
